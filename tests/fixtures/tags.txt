@@ -1,4 +1,4 @@
-abc111	refs/tags/v0.1.5
-abc222	refs/tags/v0.1.5.post3
-abc333	refs/tags/v0.2.2
-abc444	refs/tags/v0.3.0-rc1
+1a2b3c4d5e6f7890abcdef1234567890abcdef12	refs/tags/v0.1.5
+2b3c4d5e6f7890abcdef1234567890abcdef1234	refs/tags/v0.1.5.post3
+3c4d5e6f7890abcdef1234567890abcdef123456	refs/tags/v0.2.2
+4d5e6f7890abcdef1234567890abcdef12345678	refs/tags/v0.3.0-rc1

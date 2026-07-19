@@ -6,6 +6,10 @@ source "$ROOT/tests/lib/assert.sh"
 source "$ROOT/scripts/lib/common.sh"
 
 pattern='^v[0-9]+(\.[0-9]+)+(\.post[0-9]+)?$'
+assert_status "fixture uses full SHA-1 refs" 0 bash -c '
+  grep -Eq "^[0-9a-f]{40}[[:space:]]+refs/tags/" "$1" &&
+  [[ $(wc -l < "$1") -eq $(grep -Ec "^[0-9a-f]{40}[[:space:]]+refs/tags/" "$1") ]]
+' bash "$ROOT/tests/fixtures/tags.txt"
 assert_eq "selects latest stable tag" "v0.2.2" "$(select_latest_tag_from_file "$ROOT/tests/fixtures/tags.txt" "$pattern")"
 
 temporary_root=$(mktemp -d)

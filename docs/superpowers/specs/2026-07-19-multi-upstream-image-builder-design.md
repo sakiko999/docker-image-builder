@@ -164,7 +164,7 @@ The workflow performs these ordered actions:
 
 1. Check out the overlay repository and configure the bot identity used only for state commits.
 2. Validate requested target IDs and each target configuration.
-3. Set up Docker Buildx and authenticate to ghcr.io using the workflow GITHUB_TOKEN.
+3. Use the GitHub runner's Docker Engine and authenticate to ghcr.io with the workflow GITHUB_TOKEN.
 4. Run the generic engine once per selected target. The engine resolves the latest tag, clones upstream into a mktemp directory, applies patches, invokes the target adapter, and publishes latest plus the upstream tag.
 5. Commit and push changed state/*.json files only after every selected target finished successfully.
 
@@ -220,4 +220,3 @@ State remains unchanged for every failure before its atomic write. Workflows log
 To add a new upstream project, create targets/<new-id>/target.json, its adapter, Dockerfile, optional patches, configuration templates, and tests. The central engine and workflow remain unchanged if the new target fits the same adapter contract. A genuinely different build class adds a narrowly scoped adapter capability rather than changing nanobot behavior or copying the workflow.
 
 Multi-architecture builds, SBOMs, signing, scanning, release notes, retention policies, and GitHub Releases can be layered on this contract later. None are required for the first working nanobot image builder.
-

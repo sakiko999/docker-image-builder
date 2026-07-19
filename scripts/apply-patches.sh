@@ -24,6 +24,7 @@ shopt -s nullglob
 patch_files=("$patch_directory"/*.patch)
 
 for patch_file in "${patch_files[@]}"; do
+  [[ -f "$patch_file" ]] || continue
   printf 'Applying patch: %s\n' "${patch_file##*/}"
   patch -d "$source_directory" -p1 < "$patch_file" || exit 1
 done

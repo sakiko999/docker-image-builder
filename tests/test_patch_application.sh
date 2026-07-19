@@ -8,6 +8,7 @@ temporary_root=$(mktemp -d)
 source_directory="$temporary_root/source"
 patch_directory="$temporary_root/patches"
 empty_patch_directory="$temporary_root/empty-patches"
+patch_output="$temporary_root/patch-output"
 
 cleanup() {
   rm -rf "$temporary_root"
@@ -37,8 +38,11 @@ index f719efd..2bdf67a 100644
 +three
 PATCH
 
-assert_status "applies patches in deterministic order" 0 "$ROOT/scripts/apply-patches.sh" "$patch_directory" "$source_directory"
+mkdir "$patch_directory/ignored.patch"
+
+assert_status "applies patches in deterministic order" 0 bash -o pipefail -c '"$1" "$2" "$3" 2>&1 | tee "$4"' bash "$ROOT/scripts/apply-patches.sh" "$patch_directory" "$source_directory" "$patch_output"
 assert_eq "patches produce final content" "three" "$(<"$source_directory/message.txt")"
+assert_status "patch directories are not logged" 1 grep -F "Applying patch: ignored.patch" "$patch_output"
 
 printf 'unchanged\n' > "$source_directory/message.txt"
 assert_status "empty patch directory succeeds" 0 "$ROOT/scripts/apply-patches.sh" "$empty_patch_directory" "$source_directory"

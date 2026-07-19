@@ -35,15 +35,24 @@ assert_status() {
 
   shift 2
 
+  if (( $# == 0 )); then
+    fail "$message: expected a command"
+  fi
+
   case $- in
     *e*) errexit_enabled=true ;;
   esac
 
-  set +e
-  "$@"
-  actual_status=$?
+  if "$@"; then
+    actual_status=0
+  else
+    actual_status=$?
+  fi
+
   if [[ "$errexit_enabled" == true ]]; then
     set -e
+  else
+    set +e
   fi
 
   if [[ "$expected_status" != "$actual_status" ]]; then

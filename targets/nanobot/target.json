@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "nanobot",
+  "upstream": {
+    "repository": "HKUDS/nanobot",
+    "tagPattern": "^v[0-9]+(\\.[0-9]+)+(\\.post[0-9]+)?$"
+  },
+  "image": {
+    "repository": "ghcr.io/sakiko999/nanobot",
+    "platform": "linux/amd64"
+  },
+  "build": {
+    "adapter": "build.sh",
+    "dockerfile": "Dockerfile"
+  }
+}

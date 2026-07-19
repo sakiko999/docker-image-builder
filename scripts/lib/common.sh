@@ -75,7 +75,7 @@ state_needs_build() {
     (.upstream.commit | type == "string") and
     (.image | type == "object") and
     (.image.repository | type == "string") and
-    (.image.tags | type == "array") and
+    .image.tags == ["latest", $tag] and
     (.overlayCommit | type == "string") and
     (.builtAt | type == "string") and
     .upstream.tag == $tag and

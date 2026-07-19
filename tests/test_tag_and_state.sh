@@ -46,6 +46,10 @@ printf '%s\n' '{ "upstream": { "tag": "v0.2.2", "commit": "abc123" } }' > "$STAT
 assert_status "partial state needs build" 0 state_needs_build nanobot v0.2.2 abc123
 printf '%s\n' '{ malformed json' > "$STATE_DIR/nanobot.json"
 assert_status "malformed state needs build" 0 state_needs_build nanobot v0.2.2 abc123
+printf '%s\n' '{"schemaVersion":1,"target":"nanobot","upstream":{"repository":"HKUDS/nanobot","tag":"v0.2.2","commit":"abc123"},"image":{"repository":"ghcr.io/sakiko999/nanobot","tags":[]},"overlayCommit":"overlay456","builtAt":"2026-07-19T00:00:00Z"}' > "$STATE_DIR/nanobot.json"
+assert_status "empty image tags need build" 0 state_needs_build nanobot v0.2.2 abc123
+printf '%s\n' '{"schemaVersion":1,"target":"nanobot","upstream":{"repository":"HKUDS/nanobot","tag":"v0.2.2","commit":"abc123"},"image":{"repository":"ghcr.io/sakiko999/nanobot","tags":["latest",123]},"overlayCommit":"overlay456","builtAt":"2026-07-19T00:00:00Z"}' > "$STATE_DIR/nanobot.json"
+assert_status "non-string image tags need build" 0 state_needs_build nanobot v0.2.2 abc123
 
 write_state \
   nanobot \

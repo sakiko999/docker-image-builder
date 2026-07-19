@@ -13,8 +13,13 @@ if [[ "$1" != all ]]; then
   exit 0
 fi
 
-while IFS= read -r target_id; do
-  "$SCRIPT_DIR/validate-target.sh" "$target_id"
-done < <(
-  find "$REPO_ROOT/targets" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
-)
+targets_root="$REPO_ROOT/targets"
+[[ -d "$targets_root" && -r "$targets_root" ]] || die "targets directory is missing or unreadable"
+
+target_ids=$(LC_ALL=C find "$targets_root" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | LC_ALL=C sort)
+
+if [[ -n "$target_ids" ]]; then
+  while IFS= read -r target_id; do
+    "$SCRIPT_DIR/validate-target.sh" "$target_id"
+  done <<< "$target_ids"
+fi

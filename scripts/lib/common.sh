@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(git rev-parse --show-toplevel)"
+COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(git -C "$COMMON_DIR/../.." rev-parse --show-toplevel)"
 
 die() {
   printf 'error: %s\n' "$1" >&2
@@ -22,11 +23,13 @@ target_dir() {
 }
 
 target_config() {
-  printf '%s/target.json\n' "$(target_dir "$1")"
+  local directory
+  directory=$(target_dir "$1") || return 1
+  printf '%s/target.json\n' "$directory"
 }
 
 target_field() {
-  jq -r "$2" "$(target_config "$1")"
+  jq -er "$2" "$(target_config "$1")"
 }
 
 safe_target_file_name() {

@@ -66,8 +66,20 @@ state_needs_build() {
   file=$(state_file "$target") || return 0
   [[ -f "$file" ]] || return 0
 
-  if jq -e --arg tag "$tag" --arg commit "$commit" '
-    .upstream.tag == $tag and .upstream.commit == $commit
+  if jq -e --arg target "$target" --arg tag "$tag" --arg commit "$commit" '
+    .schemaVersion == 1 and
+    .target == $target and
+    (.upstream | type == "object") and
+    (.upstream.repository | type == "string") and
+    (.upstream.tag | type == "string") and
+    (.upstream.commit | type == "string") and
+    (.image | type == "object") and
+    (.image.repository | type == "string") and
+    (.image.tags | type == "array") and
+    (.overlayCommit | type == "string") and
+    (.builtAt | type == "string") and
+    .upstream.tag == $tag and
+    .upstream.commit == $commit
   ' "$file" >/dev/null 2>&1; then
     return 1
   fi
@@ -87,10 +99,10 @@ write_state() {
   local temporary_file
 
   file=$(state_file "$target") || die "invalid state target: $target"
-  mkdir -p "$STATE_DIR"
-  temporary_file=$(mktemp "$STATE_DIR/.${target}.XXXXXX")
+  mkdir -p "$STATE_DIR" || return 1
+  temporary_file=$(mktemp "$STATE_DIR/.${target}.XXXXXX") || return 1
 
-  jq -n \
+  if ! jq -n \
     --arg target "$target" \
     --arg repository "$repository" \
     --arg tag "$tag" \
@@ -105,6 +117,13 @@ write_state() {
       image: { repository: $image, tags: ["latest", $tag] },
       overlayCommit: $overlay_commit,
       builtAt: $built_at
-    }' > "$temporary_file"
-  mv "$temporary_file" "$file"
+    }' > "$temporary_file"; then
+    rm -f "$temporary_file"
+    return 1
+  fi
+
+  if ! mv "$temporary_file" "$file"; then
+    rm -f "$temporary_file"
+    return 1
+  fi
 }

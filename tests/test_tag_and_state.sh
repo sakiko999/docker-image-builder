@@ -42,4 +42,41 @@ assert_status "matching tag and commit skips build" 1 state_needs_build nanobot 
 assert_status "changed tag needs build" 0 state_needs_build nanobot v0.2.3 abc123
 assert_status "changed commit needs build" 0 state_needs_build nanobot v0.2.2 def456
 
+printf '%s\n' '{ "upstream": { "tag": "v0.2.2", "commit": "abc123" } }' > "$STATE_DIR/nanobot.json"
+assert_status "partial state needs build" 0 state_needs_build nanobot v0.2.2 abc123
+printf '%s\n' '{ malformed json' > "$STATE_DIR/nanobot.json"
+assert_status "malformed state needs build" 0 state_needs_build nanobot v0.2.2 abc123
+
+write_state \
+  nanobot \
+  HKUDS/nanobot \
+  v0.2.2 \
+  abc123 \
+  ghcr.io/sakiko999/nanobot \
+  overlay456 \
+  2026-07-19T00:00:00Z
+assert_status "successful rewrite has expected schema" 0 jq -e '
+  .schemaVersion == 1 and
+  .target == "nanobot" and
+  .upstream == { repository: "HKUDS/nanobot", tag: "v0.2.2", commit: "abc123" } and
+  .image == { repository: "ghcr.io/sakiko999/nanobot", tags: ["latest", "v0.2.2"] } and
+  .overlayCommit == "overlay456" and
+  .builtAt == "2026-07-19T00:00:00Z"
+' "$STATE_DIR/nanobot.json"
+
+snapshot="$temporary_root/state-before-failed-write.json"
+cp "$STATE_DIR/nanobot.json" "$snapshot"
+fake_bin="$temporary_root/fake-bin"
+mkdir "$fake_bin"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$fake_bin/jq"
+chmod +x "$fake_bin/jq"
+original_path=$PATH
+PATH="$fake_bin:$PATH"
+if write_state nanobot HKUDS/nanobot v0.2.2 abc123 ghcr.io/sakiko999/nanobot overlay456 2026-07-19T00:00:00Z; then
+  fail "failed jq serialization must make write_state fail"
+fi
+PATH=$original_path
+assert_status "failed write preserves prior state" 0 cmp -s "$snapshot" "$STATE_DIR/nanobot.json"
+assert_status "failed write removes temporary state" 1 bash -c 'compgen -G "$1/.nanobot.*" > /dev/null' bash "$STATE_DIR"
+
 pass "tag resolution and state"

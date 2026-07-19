@@ -3,6 +3,7 @@ set -euo pipefail
 
 COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(git -C "$COMMON_DIR/../.." rev-parse --show-toplevel)"
+STATE_DIR="${STATE_DIR:-$REPO_ROOT/state}"
 
 die() {
   printf 'error: %s\n' "$1" >&2
@@ -34,4 +35,76 @@ target_field() {
 
 safe_target_file_name() {
   [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]
+}
+
+state_file() {
+  safe_target_file_name "$1" || return 1
+  printf '%s/%s.json\n' "$STATE_DIR" "$1"
+}
+
+select_latest_tag_from_file() {
+  local refs_file=$1
+  local pattern=$2
+  local latest_tag
+
+  latest_tag=$(awk '{
+    tag = $2
+    sub(/^refs\/tags\//, "", tag)
+    print tag
+  }' "$refs_file" | { grep -E -- "$pattern" || true; } | LC_ALL=C sort -V | tail -n 1)
+
+  [[ -n "$latest_tag" ]] || die "no tags matched pattern: $pattern"
+  printf '%s\n' "$latest_tag"
+}
+
+state_needs_build() {
+  local target=$1
+  local tag=$2
+  local commit=$3
+  local file
+
+  file=$(state_file "$target") || return 0
+  [[ -f "$file" ]] || return 0
+
+  if jq -e --arg tag "$tag" --arg commit "$commit" '
+    .upstream.tag == $tag and .upstream.commit == $commit
+  ' "$file" >/dev/null 2>&1; then
+    return 1
+  fi
+
+  return 0
+}
+
+write_state() {
+  local target=$1
+  local repository=$2
+  local tag=$3
+  local commit=$4
+  local image=$5
+  local overlay_commit=$6
+  local built_at=$7
+  local file
+  local temporary_file
+
+  file=$(state_file "$target") || die "invalid state target: $target"
+  mkdir -p "$STATE_DIR"
+  temporary_file=$(mktemp "$STATE_DIR/.${target}.XXXXXX")
+
+  jq -n \
+    --arg target "$target" \
+    --arg repository "$repository" \
+    --arg tag "$tag" \
+    --arg commit "$commit" \
+    --arg image "$image" \
+    --arg overlay_commit "$overlay_commit" \
+    --arg built_at "$built_at" \
+    '{
+      schemaVersion: 1,
+      target: $target,
+      upstream: { repository: $repository, tag: $tag, commit: $commit },
+      image: { repository: $image, tags: ["latest", $tag] },
+      overlayCommit: $overlay_commit,
+      builtAt: $built_at
+    }' > "$temporary_file"
+  mv "$temporary_file" "$file"
 }

@@ -1,0 +1,16 @@
+name: Test image builder
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Bash and configuration tests
+        run: bash tests/run.sh

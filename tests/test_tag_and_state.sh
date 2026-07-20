@@ -19,7 +19,15 @@ cleanup() {
 trap cleanup EXIT
 
 STATE_DIR="$temporary_root/state"
-assert_status "missing state needs build" 0 state_needs_build nanobot v0.2.2 abc123
+target=nanobot
+repository=HKUDS/nanobot
+tag=v0.2.2
+commit=abc123
+image=ghcr.io/sakiko999/nanobot
+overlay=overlay456
+
+assert_status "missing state needs build" 0 \
+  state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
 
 write_state \
   nanobot \
@@ -38,18 +46,31 @@ assert_status "state has expected schema" 0 jq -e '
   .overlayCommit == "overlay456" and
   .builtAt == "2026-07-19T00:00:00Z"
 ' "$STATE_DIR/nanobot.json"
-assert_status "matching tag and commit skips build" 1 state_needs_build nanobot v0.2.2 abc123
-assert_status "changed tag needs build" 0 state_needs_build nanobot v0.2.3 abc123
-assert_status "changed commit needs build" 0 state_needs_build nanobot v0.2.2 def456
+assert_status "matching publication identity skips build" 1 \
+  state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
+assert_status "changed tag needs build" 0 \
+  state_needs_build "$target" "$repository" v0.2.3 "$commit" "$image" "$overlay"
+assert_status "changed commit needs build" 0 \
+  state_needs_build "$target" "$repository" "$tag" def456 "$image" "$overlay"
+assert_status "changed upstream repository needs build" 0 \
+  state_needs_build "$target" example/nanobot "$tag" "$commit" "$image" "$overlay"
+assert_status "changed image repository needs build" 0 \
+  state_needs_build "$target" "$repository" "$tag" "$commit" ghcr.io/example/nanobot "$overlay"
+assert_status "changed overlay needs build" 0 \
+  state_needs_build "$target" "$repository" "$tag" "$commit" "$image" changed-overlay
 
 printf '%s\n' '{ "upstream": { "tag": "v0.2.2", "commit": "abc123" } }' > "$STATE_DIR/nanobot.json"
-assert_status "partial state needs build" 0 state_needs_build nanobot v0.2.2 abc123
+assert_status "partial state needs build" 0 \
+  state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
 printf '%s\n' '{ malformed json' > "$STATE_DIR/nanobot.json"
-assert_status "malformed state needs build" 0 state_needs_build nanobot v0.2.2 abc123
+assert_status "malformed state needs build" 0 \
+  state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
 printf '%s\n' '{"schemaVersion":1,"target":"nanobot","upstream":{"repository":"HKUDS/nanobot","tag":"v0.2.2","commit":"abc123"},"image":{"repository":"ghcr.io/sakiko999/nanobot","tags":[]},"overlayCommit":"overlay456","builtAt":"2026-07-19T00:00:00Z"}' > "$STATE_DIR/nanobot.json"
-assert_status "empty image tags need build" 0 state_needs_build nanobot v0.2.2 abc123
+assert_status "empty image tags need build" 0 \
+  state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
 printf '%s\n' '{"schemaVersion":1,"target":"nanobot","upstream":{"repository":"HKUDS/nanobot","tag":"v0.2.2","commit":"abc123"},"image":{"repository":"ghcr.io/sakiko999/nanobot","tags":["latest",123]},"overlayCommit":"overlay456","builtAt":"2026-07-19T00:00:00Z"}' > "$STATE_DIR/nanobot.json"
-assert_status "non-string image tags need build" 0 state_needs_build nanobot v0.2.2 abc123
+assert_status "non-string image tags need build" 0 \
+  state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
 
 write_state \
   nanobot \

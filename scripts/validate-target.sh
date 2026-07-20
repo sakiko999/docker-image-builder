@@ -30,4 +30,9 @@ jq -e '
 [[ "$(target_field "$target_id" '.id')" == "$target_id" ]] || die "target id does not match directory: $target_id"
 [[ "$(target_field "$target_id" '.image.repository')" == ghcr.io/* ]] || die "image repository must begin with ghcr.io/: $target_id"
 
+adapter=$(target_field "$target_id" '.build.adapter')
+dockerfile=$(target_field "$target_id" '.build.dockerfile')
+safe_target_file_name "$adapter" || die "invalid target adapter file name: $target_id"
+safe_target_file_name "$dockerfile" || die "invalid target Dockerfile name: $target_id"
+
 printf '%s\n' "$target_id"

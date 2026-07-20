@@ -59,14 +59,23 @@ select_latest_tag_from_file() {
 
 state_needs_build() {
   local target=$1
-  local tag=$2
-  local commit=$3
+  local repository=$2
+  local tag=$3
+  local commit=$4
+  local image=$5
+  local overlay_commit=$6
   local file
 
   file=$(state_file "$target") || return 0
   [[ -f "$file" ]] || return 0
 
-  if jq -e --arg target "$target" --arg tag "$tag" --arg commit "$commit" '
+  if jq -e \
+    --arg target "$target" \
+    --arg repository "$repository" \
+    --arg tag "$tag" \
+    --arg commit "$commit" \
+    --arg image "$image" \
+    --arg overlay_commit "$overlay_commit" '
     .schemaVersion == 1 and
     .target == $target and
     (.upstream | type == "object") and
@@ -78,8 +87,11 @@ state_needs_build() {
     .image.tags == ["latest", $tag] and
     (.overlayCommit | type == "string") and
     (.builtAt | type == "string") and
+    .upstream.repository == $repository and
     .upstream.tag == $tag and
-    .upstream.commit == $commit
+    .upstream.commit == $commit and
+    .image.repository == $image and
+    .overlayCommit == $overlay_commit
   ' "$file" >/dev/null 2>&1; then
     return 1
   fi

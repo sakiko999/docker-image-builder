@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "target": "nanobot",
+  "upstream": {
+    "repository": "HKUDS/nanobot",
+    "tag": "v0.2.2",
+    "commit": "e2e75c913f3524d4bc5b23487a4eed5329eef182"
+  },
+  "image": {
+    "repository": "ghcr.io/sakiko999/nanobot-image",
+    "tags": [
+      "latest",
+      "v0.2.2"
+    ]
+  },
+  "overlayCommit": "d8808ce5964b4122ac00225303eec4b1f4ad523f",
+  "builtAt": "2026-07-20T14:16:45Z"
+}

@@ -23,7 +23,7 @@ target=nanobot
 repository=HKUDS/nanobot
 tag=v0.2.2
 commit=abc123
-image=ghcr.io/sakiko999/nanobot
+image=ghcr.io/sakiko999/nanobot-image
 overlay=overlay456
 
 assert_status "missing state needs build" 0 \
@@ -34,7 +34,7 @@ write_state \
   HKUDS/nanobot \
   v0.2.2 \
   abc123 \
-  ghcr.io/sakiko999/nanobot \
+  ghcr.io/sakiko999/nanobot-image \
   overlay456 \
   2026-07-19T00:00:00Z
 
@@ -42,7 +42,7 @@ assert_status "state has expected schema" 0 jq -e '
   .schemaVersion == 1 and
   .target == "nanobot" and
   .upstream == { repository: "HKUDS/nanobot", tag: "v0.2.2", commit: "abc123" } and
-  .image == { repository: "ghcr.io/sakiko999/nanobot", tags: ["latest", "v0.2.2"] } and
+  .image == { repository: "ghcr.io/sakiko999/nanobot-image", tags: ["latest", "v0.2.2"] } and
   .overlayCommit == "overlay456" and
   .builtAt == "2026-07-19T00:00:00Z"
 ' "$STATE_DIR/nanobot.json"
@@ -65,10 +65,10 @@ assert_status "partial state needs build" 0 \
 printf '%s\n' '{ malformed json' > "$STATE_DIR/nanobot.json"
 assert_status "malformed state needs build" 0 \
   state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
-printf '%s\n' '{"schemaVersion":1,"target":"nanobot","upstream":{"repository":"HKUDS/nanobot","tag":"v0.2.2","commit":"abc123"},"image":{"repository":"ghcr.io/sakiko999/nanobot","tags":[]},"overlayCommit":"overlay456","builtAt":"2026-07-19T00:00:00Z"}' > "$STATE_DIR/nanobot.json"
+printf '%s\n' '{"schemaVersion":1,"target":"nanobot","upstream":{"repository":"HKUDS/nanobot","tag":"v0.2.2","commit":"abc123"},"image":{"repository":"ghcr.io/sakiko999/nanobot-image","tags":[]},"overlayCommit":"overlay456","builtAt":"2026-07-19T00:00:00Z"}' > "$STATE_DIR/nanobot.json"
 assert_status "empty image tags need build" 0 \
   state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
-printf '%s\n' '{"schemaVersion":1,"target":"nanobot","upstream":{"repository":"HKUDS/nanobot","tag":"v0.2.2","commit":"abc123"},"image":{"repository":"ghcr.io/sakiko999/nanobot","tags":["latest",123]},"overlayCommit":"overlay456","builtAt":"2026-07-19T00:00:00Z"}' > "$STATE_DIR/nanobot.json"
+printf '%s\n' '{"schemaVersion":1,"target":"nanobot","upstream":{"repository":"HKUDS/nanobot","tag":"v0.2.2","commit":"abc123"},"image":{"repository":"ghcr.io/sakiko999/nanobot-image","tags":["latest",123]},"overlayCommit":"overlay456","builtAt":"2026-07-19T00:00:00Z"}' > "$STATE_DIR/nanobot.json"
 assert_status "non-string image tags need build" 0 \
   state_needs_build "$target" "$repository" "$tag" "$commit" "$image" "$overlay"
 
@@ -77,14 +77,14 @@ write_state \
   HKUDS/nanobot \
   v0.2.2 \
   abc123 \
-  ghcr.io/sakiko999/nanobot \
+  ghcr.io/sakiko999/nanobot-image \
   overlay456 \
   2026-07-19T00:00:00Z
 assert_status "successful rewrite has expected schema" 0 jq -e '
   .schemaVersion == 1 and
   .target == "nanobot" and
   .upstream == { repository: "HKUDS/nanobot", tag: "v0.2.2", commit: "abc123" } and
-  .image == { repository: "ghcr.io/sakiko999/nanobot", tags: ["latest", "v0.2.2"] } and
+  .image == { repository: "ghcr.io/sakiko999/nanobot-image", tags: ["latest", "v0.2.2"] } and
   .overlayCommit == "overlay456" and
   .builtAt == "2026-07-19T00:00:00Z"
 ' "$STATE_DIR/nanobot.json"
@@ -97,7 +97,7 @@ printf '#!/usr/bin/env bash\nexit 1\n' > "$fake_bin/jq"
 chmod +x "$fake_bin/jq"
 original_path=$PATH
 PATH="$fake_bin:$PATH"
-if write_state nanobot HKUDS/nanobot v0.2.2 abc123 ghcr.io/sakiko999/nanobot overlay456 2026-07-19T00:00:00Z; then
+if write_state nanobot HKUDS/nanobot v0.2.2 abc123 ghcr.io/sakiko999/nanobot-image overlay456 2026-07-19T00:00:00Z; then
   fail "failed jq serialization must make write_state fail"
 fi
 PATH=$original_path

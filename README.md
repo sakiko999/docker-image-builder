@@ -6,8 +6,8 @@ A configuration-driven delivery layer for upstream projects. This repository doe
 
 - `HKUDS/nanobot`
 - Latest accepted Git tag only (no historical-tag selection or rollback)
-- `ghcr.io/sakiko999/nanobot:latest`
-- `ghcr.io/sakiko999/nanobot:<upstream-tag>`
+- `ghcr.io/sakiko999/nanobot-image:latest`
+- `ghcr.io/sakiko999/nanobot-image:<upstream-tag>`
 
 Adding another upstream project means adding a self-contained `targets/<id>/` directory; the generic engine and workflows stay unchanged. See `docs/adding-target.md`.
 

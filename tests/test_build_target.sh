@@ -96,7 +96,7 @@ assert_contains "engine resolves the fake upstream tag and SHA" "$(<"$output")" 
   "Selected target nanobot at upstream tag v0.2.2 (upstream-test-sha)"
 assert_status "temporary adapter runs before publication" 0 test -e "$adapter_marker"
 assert_eq "both image tags are pushed before state persistence" \
-  $'push ghcr.io/sakiko999/nanobot:latest\npush ghcr.io/sakiko999/nanobot:v0.2.2' \
+  $'push ghcr.io/sakiko999/nanobot-image:latest\npush ghcr.io/sakiko999/nanobot-image:v0.2.2' \
   "$(<"$docker_log")"
 assert_status "failed state persistence preserves old state" 0 \
   cmp -s "$state_snapshot" "$state_directory/nanobot.json"

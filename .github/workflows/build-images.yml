@@ -1,6 +1,8 @@
 name: Build container images
 
 on:
+  schedule:
+    - cron: "0 */6 * * *"
   workflow_dispatch:
     inputs:
       target:
@@ -10,10 +12,17 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
+  packages: write
+
+concurrency:
+  group: image-build-${{ github.repository }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TARGET: ${{ github.event.inputs.target || 'all' }}
     steps:
-      - run: echo "minimal probe"
+      - run: echo "medium probe $TARGET"

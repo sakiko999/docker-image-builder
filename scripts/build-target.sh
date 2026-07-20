@@ -52,8 +52,9 @@ upstream_sha=$(git -C "$source_directory" rev-parse HEAD)
 printf 'Selected target %s at upstream tag %s (%s)\n' \
   "$target_id" "$upstream_tag" "$upstream_sha"
 
-if ! overlay_sha=$(git -C "$ROOT" rev-parse HEAD 2>/dev/null); then
-  overlay_sha=local
+overlay_sha="$(git -C "$ROOT" rev-list -1 HEAD -- ':!state' 2>/dev/null || true)"
+if [ -z "$overlay_sha" ]; then
+  overlay_sha="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || echo local)"
 fi
 
 if [[ "$publish" == true ]] && ! state_needs_build \

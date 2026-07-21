@@ -7,7 +7,7 @@
     "commit": "e2e75c913f3524d4bc5b23487a4eed5329eef182"
   },
   "image": {
-    "repository": "ghcr.io/sakiko999/nanobot-image",
+    "repository": "ghcr.io/sakiko999/nanobot",
     "tags": [
       "latest",
       "v0.2.2"

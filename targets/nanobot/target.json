@@ -6,7 +6,7 @@
     "tagPattern": "^v[0-9]+(\\.[0-9]+)+(\\.post[0-9]+)?$"
   },
   "image": {
-    "repository": "ghcr.io/sakiko999/nanobot",
+    "repository": "ghcr.io/sakiko999/docker-image-builder/nanobot",
     "platform": "linux/amd64"
   },
   "build": {

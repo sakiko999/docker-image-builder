@@ -12,11 +12,6 @@ assert_contains "publication workflow is scheduled" "$workflow" "0 */6 * * *"
 assert_contains "publication workflow is manually dispatchable" "$workflow" "workflow_dispatch:"
 assert_contains "publication workflow can push state" "$workflow" "contents: write"
 assert_contains "publication workflow can publish packages" "$workflow" "packages: write"
-# Accept GITHUB_TOKEN or GHCR_PAT (user-level packages require PAT)
-if echo "$workflow" | grep -q "GITHUB_TOKEN\|GHCR_PAT"; then
-  : # ok
-else
-  fail "publication workflow should reference GITHUB_TOKEN or GHCR_PAT"
-fi
+assert_contains "publication workflow uses GITHUB_TOKEN" "$workflow" "GITHUB_TOKEN"
 assert_contains "test workflow runs script tests" "$tests_workflow" "tests/run.sh"
 pass "workflow contract"

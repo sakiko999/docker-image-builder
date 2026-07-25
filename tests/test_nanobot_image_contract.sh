@@ -14,7 +14,7 @@ assert_contains "Dockerfile accepts a base image" "$dockerfile" "ARG BASE_IMAGE"
 assert_contains "Dockerfile exposes gateway health port" "$dockerfile" "EXPOSE 18790"
 assert_contains "Dockerfile exposes WebUI port" "$dockerfile" "EXPOSE 8765"
 assert_contains "Dockerfile sets gateway default" "$dockerfile" 'CMD ["gateway"]'
-assert_contains "entrypoint checks writable state" "$entrypoint" "not writable"
+assert_contains "entrypoint auto-creates data dir" "$entrypoint" "mkdir -p"
 assert_contains "healthcheck probes endpoint" "$healthcheck" "/health"
 assert_status "target assets validate" 0 "$ROOT/scripts/validate-target.sh" nanobot
 pass "nanobot image contract"

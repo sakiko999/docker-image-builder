@@ -21,6 +21,24 @@ ENV HOME=/root
 # 保留上游的 Python 运行时环境配置
 ENV PYTHONUNBUFFERED=1 PYTHONFAULTHANDLER=1
 
+# 预装常用工具
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      ca-certificates \
+      curl \
+      gpg \
+      unzip \
+      zip \
+      jq \
+      tmux && \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+      gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      > /etc/apt/sources.list.d/github-cli.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gh && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY --chmod=0755 targets/nanobot/entrypoint.sh /usr/local/bin/nanobot-overlay-entrypoint
 COPY --chmod=0755 targets/nanobot/healthcheck.sh /usr/local/bin/nanobot-healthcheck
 COPY targets/nanobot/config/ /opt/nanobot-overlay/config/

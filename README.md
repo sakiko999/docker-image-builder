@@ -1,72 +1,39 @@
 # Docker Image Builder
 
-A configuration-driven delivery layer for upstream projects. This repository does **not** fork or commit upstream source code; it tracks the latest accepted upstream Git tag for each target, builds that exact revision with target-specific overlays, and publishes the result to GitHub Container Registry (GHCR).
+配置驱动的上游项目镜像交付层。不 fork 上游源码，跟踪最新 Git tag 构建并发布到 GHCR。
 
-## Current target
+## 当前目标
 
-- `HKUDS/nanobot`
-- Latest accepted Git tag only (no historical-tag selection or rollback)
-- `ghcr.io/sakiko999/nanobot:latest`
-- `ghcr.io/sakiko999/nanobot:<upstream-tag>`
+- `HKUDS/nanobot` → `ghcr.io/sakiko999/nanobot:latest`
 
-Adding another upstream project means adding a self-contained `targets/<id>/` directory; the generic engine and workflows stay unchanged. See `docs/adding-target.md`.
+参见 `docs/adding-target.md` 添加新目标。
 
-## Repository model
+## 仓库结构
 
 ```
-targets/<id>/target.json     declarative target metadata
-targets/<id>/build.sh        project-specific build adapter
-targets/<id>/Dockerfile      final image overlay
-targets/<id>/patches/        optional ordered source patches
-targets/<id>/config/         non-secret configuration templates
-scripts/                     generic validation, tag, patch, and build engine
-state/<id>.json              latest successful build record (committed by CI)
+targets/<id>/target.json     目标元数据
+targets/<id>/build.sh        构建适配器
+targets/<id>/Dockerfile      最终镜像覆盖层
+targets/<id>/patches/        上游源码补丁（可选）
+targets/<id>/config/         配置文件模板（可选）
+scripts/                     通用构建引擎
+state/<id>.json              上次成功构建记录（CI 提交）
 ```
 
-The engine resolves the latest matching upstream tag, clones that tag into a temporary directory, applies patches, invokes the target adapter, pushes `latest` and the upstream tag, and writes `state/<id>.json` only after both tags are published.
-
-## Local build
+## 本地构建
 
 ```bash
 ./scripts/build-local.sh nanobot
 ```
 
-The local command always resolves the latest matching upstream tag, builds both `:latest` and `:<upstream-tag>` images locally, and never writes state or publishes. It accepts exactly one target ID and never accepts a historical tag.
+构建 `:latest` 和 `:<upstream-tag>` 两个镜像，不写入 state，不推送。
 
-## Container runtime
+## 自动化
 
-该镜像默认以 **root 用户** 运行，不会降权。
-
-- **默认数据目录**: `/root/.nanobot`（容器内 `$HOME/.nanobot`）
-- **自定义路径**: 设置环境变量 `NANOBOT_HOME` 可覆盖
-- 数据目录不存在时由入口点自动创建
-
-### 挂载示例
+每 6 小时检查上游新 tag，也可手动触发：
 
 ```bash
-# 默认 root 数据目录
-docker run -v nanobot-data:/root/.nanobot ghcr.io/sakiko999/docker-image-builder/nanobot:latest gateway
-
-# 自定义数据目录
-docker run -v /host/path:/data -e NANOBOT_HOME=/data ghcr.io/sakiko999/docker-image-builder/nanobot:latest gateway
+gh workflow run build-images.yml -f target=nanobot
 ```
 
-### 构建参数
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `NANOBOT_EXTRAS` | (空) | 额外 Python 依赖，对应 `[extra]` |
-| `NANOBOT_CHANNELS` | (空) | 预装 channel 依赖，逗号分隔 |
-
-示例：
-
-```bash
-# 指定 channel（默认无）
-NANOBOT_CHANNELS=telegram ./scripts/build-local.sh nanobot
-```
-
-The image probes its gateway health endpoint at `http://127.0.0.1:18790/health` by default (override with `NANOBOT_HEALTH_URL`). The image intentionally does not embed secrets.
-
-## Automation
-
-`build-images.yml` checks targets every six hours and can be started manually with `target=nanobot` or `target=all`. It authenticates to GHCR with `GITHUB_TOKEN`, runs the test suite, builds and publishes each selected target's latest image, then commits a state file only after successful publication.
+工作流运行测试套件→构建镜像→推送 GHCR→提交 state 文件。

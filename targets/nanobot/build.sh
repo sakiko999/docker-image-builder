@@ -15,11 +15,15 @@ err() {
 platform="$(jq -er '.image.platform' "$TARGET_DIR/target.json")"
 base_image="local/nanobot-upstream:$UPSTREAM_SHA"
 
+# 构建上游基础镜像，透传 NANOBOT_EXTRAS 和 NANOBOT_CHANNELS 构建参数
 docker build --platform "$platform" \
   --file "$SOURCE_DIR/Dockerfile" \
+  --build-arg "NANOBOT_EXTRAS=${NANOBOT_EXTRAS:-}" \
+  --build-arg "NANOBOT_CHANNELS=${NANOBOT_CHANNELS:-}" \
   --tag "$base_image" \
   "$SOURCE_DIR"
 
+# 构建覆盖层镜像
 docker build --platform "$platform" \
   --file "$TARGET_DIR/Dockerfile" \
   --build-arg "BASE_IMAGE=$base_image" \

@@ -5,10 +5,9 @@ set -eu
 #
 # 容器默认以 root (UID 0) 运行，不会降权。
 # 数据目录由 NANOBOT_HOME 环境变量指定，默认使用 $HOME/.nanobot (/root/.nanobot)。
-# 如果数据目录不存在，将自动创建。
+# 启动时自动初始化：数据目录不存在则创建，配置不存在则运行 onboard。
 #
-# 当 RENDER=true 时（Render 部署平台），从 /app/render-config.json 初始化
-# 配置文件到数据目录，并附加 --config 参数。
+# 当 RENDER=true 时，从 /app/render-config.json 初始化配置文件。
 
 dir="$HOME/.nanobot"
 
@@ -26,11 +25,17 @@ if [ "${RENDER:-}" = "true" ]; then
     set -- "$@" --config "$config"
 fi
 
-# 非 Render 模式：确保数据目录存在且可写
+# 确保数据目录存在且可写
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 elif [ ! -w "$dir" ]; then
     chmod 755 "$dir"
+fi
+
+# 配置不存在时自动初始化（非交互），确保 gateway 等命令可直接运行
+if [ ! -f "$dir/config.json" ]; then
+    echo "[entrypoint] no config found — running onboard"
+    nanobot onboard 2>&1
 fi
 
 exec nanobot "$@"

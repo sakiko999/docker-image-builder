@@ -21,8 +21,8 @@ assert_status "path traversal target is rejected" 1 "$ROOT/scripts/validate-targ
 assert_status "target config rejects invalid target ids" 1 bash -c 'source "$1"; target_config ../nanobot' bash "$ROOT/scripts/lib/common.sh"
 assert_status "target field rejects missing values" 1 bash -c 'source "$1"; target_field nanobot .missing' bash "$ROOT/scripts/lib/common.sh"
 assert_status "target field rejects null values" 1 bash -c 'source "$1"; target_field nanobot '"'"'.missing // null'"'"'' bash "$ROOT/scripts/lib/common.sh"
-assert_eq "all targets" "nanobot" "$("$ROOT/scripts/list-targets.sh" all)"
-assert_eq "all targets has deterministic ordering" "nanobot" "$(LC_ALL=POSIX "$ROOT/scripts/list-targets.sh" all)"
+assert_eq "all targets" $'cli-proxy-api\nnanobot' "$("$ROOT/scripts/list-targets.sh" all)"
+assert_eq "all targets has deterministic ordering" $'cli-proxy-api\nnanobot' "$(LC_ALL=POSIX "$ROOT/scripts/list-targets.sh" all)"
 assert_status "unknown target is rejected" 1 "$ROOT/scripts/list-targets.sh" unknown
 
 mv "$ROOT/targets" "$backup_targets"

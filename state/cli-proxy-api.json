@@ -3,16 +3,16 @@
   "target": "cli-proxy-api",
   "upstream": {
     "repository": "sakiko999/CLIProxyAPI",
-    "tag": "v1.0.6",
-    "commit": "5c2b1b6cefc56e10c66a7ed5b65ae5a4bb9817a6"
+    "tag": "v1.0.7",
+    "commit": "67e6167d9c2fa70c5c3d2cea86903e4590ed3ac9"
   },
   "image": {
     "repository": "ghcr.io/sakiko999/docker-image-builder/cli-proxy-api",
     "tags": [
       "latest",
-      "v1.0.6"
+      "v1.0.7"
     ]
   },
   "overlayCommit": "1ab26817f50c5c12cd7a9e1589fff973c31f6031",
-  "builtAt": "2026-08-12T14:39:24Z"
+  "builtAt": "2026-08-19T02:17:35Z"
 }

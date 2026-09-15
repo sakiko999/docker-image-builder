@@ -3,16 +3,16 @@
   "target": "nanobot",
   "upstream": {
     "repository": "HKUDS/nanobot",
-    "tag": "v0.3.0",
-    "commit": "3f602fbc8c104b5af27aa4d3520e7dcef2fa70ec"
+    "tag": "v0.3.5",
+    "commit": "1bb712d3488915ca4ed9ccc1a93067ff722f5ab9"
   },
   "image": {
     "repository": "ghcr.io/sakiko999/docker-image-builder/nanobot",
     "tags": [
       "latest",
-      "v0.3.0"
+      "v0.3.5"
     ]
   },
   "overlayCommit": "1ab26817f50c5c12cd7a9e1589fff973c31f6031",
-  "builtAt": "2026-08-04T19:46:37Z"
+  "builtAt": "2026-09-15T21:08:04Z"
 }
